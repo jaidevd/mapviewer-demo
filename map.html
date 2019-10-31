@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>lis-mapviewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="ui/leaflet/dist/leaflet.css">
+  <link rel="stylesheet" href="ui/bootstrap-select/dist/css/bootstrap-select.min.css">
+</head>
+
+<body>
+  {% set base = '.' %}
+  {% include template-navbar.html %}
+
+  <style scoped>
+    #base-map {
+      height: 600px;
+    }
+  </style>
+
+  <!-- TODO: Filter bars -->
+  <div class="container-fluid py-4">
+    <div id="base-map"></div>
+    <div class="justify-content-center">
+
+      <form>
+
+      <div class="form-group row">
+        <div class="col">
+          <label for="gcol-dd">Column in Map</label>
+        </div>
+        <div class="col">
+          <div id="gcol-dd"></div>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col">
+          <label for="mcol-dd">Column in Dataset</label>
+        </div>
+        <div class="col">
+          <div id="mcol-dd"></div>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col">
+          <label for="ccol-dd">Winner Column</label>
+        </div>
+        <div class="col">
+          <div id="ccol-dd"></div>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <button class="btn btn-primary" id="lis">Plot LIS</button>
+      </div>
+
+      </form>
+    </div>
+  </div><!-- .container-fluid -->
+
+  <script src="ui/jquery/dist/jquery.min.js"></script>
+  <script src="ui/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="ui/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+  <script src="ui/lodash/lodash.min.js"></script>
+  <script src="ui/g1/dist/g1.min.js"></script>
+  <script src="ui/leaflet/dist/leaflet.js"></script>
+  <script src="ui/d3/build/d3.js"></script>
+  <script src="ui/d3-scale-chromatic/dist/d3-scale-chromatic.min.js"></script>
+  <script src="ui/g1/dist/mapviewer.min.js"></script>
+  <script src="ui/topojson/dist/topojson.min.js"></script>
+  <!-- Commonly used libraries:
+  <script src="ui/d3v5/dist/d3.min.js"></script>
+  <script src="ui/morphdom/dist/morphdom-umd.min.js"></script>
+  <script src="ui/moment/min/moment-with-locales.min.js"></script>
+  <script src="ui/daterangepicker/daterangepicker.js"></script>
+  -->
+  <script>
+    var map = g1.mapviewer({
+      id: 'base-map',
+      layers: {
+        worldMap: { type: 'tile', url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' }
+      }
+    })
+    {% import os.path as op %}
+    {% if op.isfile('uploads/map.geojson') %}
+    map.addLayer('mymap', {type: 'geojson', url: 'uploads/map.geojson'})
+    {% end %}
+    {% if op.isfile('gcols.json') %}
+    $('#gcol-dd').on('change', (e) => {e.preventDefault()}).dropdown({
+      url: 'gcols.json',
+      target: 'pushState',
+      key: 'gcol'
+    })
+    {% end %}
+    {% if op.isfile('metacols.json') %}
+    $('#mcol-dd').on('change', (e) => {e.preventDefault()}).dropdown({
+      url: 'metacols.json',
+      target: 'pushState',
+      key: 'mcol'
+    })
+    $('#ccol-dd').on('change', (e) => {e.preventDefault()}).dropdown({
+      url: 'metacols.json',
+      target: 'pushState',
+      key: 'ccol'
+    })
+    {% end %}
+    $('#lis').on('click', (e) => {
+      e.preventDefault()
+      // Run request here
+      let url = g1.url.parse(location.href)
+      let gcol = url.searchKey.gcol
+      let mcol = url.searchKey.mcol
+      let ccol = url.searchKey.ccol
+      $.get({
+        url: `lis/${gcol}/${mcol}/${ccol}`,
+        success: (e) => {
+          map.removeLayer('mymap')
+          map.addLayer('lis',
+            {
+              type: 'geojson',
+              url: "uploads/map.geojson",
+              attrs: {
+                color: '#fff',
+                fillColor: {
+                  metric: "lis_score",
+                  scheme: "Reds"
+                },
+                fillOpacity: 1,
+                weight: 0.5
+              },
+              link: {
+                url: "uploads/lis.json",
+                dataKey: gcol,
+                mapKey: gcol
+              },
+              tooltip: (d) => {return `${d.AC_NAME} score: ${d.lis_score}`}
+            }
+          )
+        }
+      })
+    })
+  </script>
+</body>
+
+</html>
