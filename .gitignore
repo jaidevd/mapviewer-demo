@@ -80,5 +80,3 @@ $RECYCLE.BIN/
 # data artificats
 *.json
 *.geojson
-*.json
-*.geojson

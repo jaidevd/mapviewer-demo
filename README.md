@@ -13,7 +13,7 @@ $ conda install geopandas
 $ npm install leaflet d3 d3-scale-chromatic
 ```
 
-2. To run the app, try
+2. To run the app, clone it, and try
 
 ```bash
 $ gramex
