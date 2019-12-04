@@ -5,7 +5,7 @@ import numpy as np
 from geopandas import read_file
 import shutil
 
-DIR = './uploads'
+DIR = op.join(op.dirname(__file__), 'uploads')
 
 cache = {}
 
@@ -24,7 +24,7 @@ def choropleth(handler):
     X = (X - X.min()) / (X.max() - X.min())
     X = np.digitize(X.values, np.linspace(0, 1, 20))
     df[col + '_norm'] = X
-    df.to_json('metadata.json', orient='records')
+    df.to_json(op.join(DIR, 'metadata.json'), orient='records')
 
 
 def get_lis(handler):
@@ -55,7 +55,7 @@ def process_upload(meta, handler):
         outpath = op.join(DIR, 'meta.csv')
         cache['df'] = pd.read_csv(fpath)
         df = cache['df']
-        with open('metacols.json', 'w') as fout:
+        with open(op.join(DIR, 'metacols.json'), 'w') as fout:
             json.dump([''] + df.columns.tolist(), fout, indent=4)
         df.to_json('metadata.json', orient='records')
     elif meta.mime in ('application/geo+json', 'application/json'):
@@ -64,7 +64,7 @@ def process_upload(meta, handler):
         gdf = cache['gdf']
         gcols = [''] + gdf.columns.tolist()
         gcols.remove('geometry')
-        with open('gcols.json', 'w') as fout:
+        with open(op.join(DIR, 'gcols.json'), 'w') as fout:
             json.dump(gcols, fout, indent=4)
     else:
         print(meta.mime)

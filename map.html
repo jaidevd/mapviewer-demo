@@ -91,24 +91,25 @@
       }
     })
     {% import os.path as op %}
-    {% if op.isfile('uploads/map.geojson') %}
+    {% from lis_mapviewer import DIR %}
+    {% if op.isfile(op.join(DIR, 'map.geojson')) %}
     map.addLayer('mymap', {type: 'geojson', url: 'uploads/map.geojson'})
     {% end %}
-    {% if op.isfile('gcols.json') %}
+    {% if op.isfile(op.join(DIR, 'gcols.json')) %}
     $('#map-columns-dd').on('change', (e) => {e.preventDefault()}).dropdown({
-      url: 'gcols.json',
+      url: 'uploads/gcols.json',
       target: 'pushState',
       key: 'mapCol'
     })
     {% end %}
-    {% if op.isfile('metacols.json') %}
+    {% if op.isfile(op.join(DIR, 'metacols.json')) %}
     $('#data-columns-dd').on('change', (e) => {e.preventDefault()}).dropdown({
-      url: 'metacols.json',
+      url: 'uploads/metacols.json',
       target: 'pushState',
       key: 'dataCol'
     })
     $('#lis-win-dd').on('change', (e) => {e.preventDefault()}).dropdown({
-      url: 'metacols.json',
+      url: 'uploads/metacols.json',
       target: 'pushState',
       key: 'metricCol'
     })
@@ -141,7 +142,7 @@
                   weight: 0.5
                 },
                 link: {
-                  url: "metadata.json",
+                  url: "uploads/metadata.json",
                   dataKey: dataCol,
                   mapKey: mapCol
                 },
