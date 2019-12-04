@@ -21,7 +21,7 @@ $ gramex
 in the project folder and visit [http://localhost:9988](http://localhost:9988) in your browser.
 You should see a webpage that looks like this:
 
-![](assets/home.md)
+![](assets/home.png)
 
 ## Usage
 
