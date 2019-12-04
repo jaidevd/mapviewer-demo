@@ -122,7 +122,7 @@
       let dataCol = url.searchKey.dataCol
       let metricCol = url.searchKey.metricCol
       if (map.map.hasLayer(map.gLayers['lis'])) { map.removeLayer('lis') }
-      // if (map.map.hasLayer(map.gLayers['mymap'])) { map.removeLayer('mymap') }
+      if (map.map.hasLayer(map.gLayers['mymap'])) { map.removeLayer('mymap') }
       $.get(
         {
           url: `choropleth/${metricCol}`,
@@ -168,7 +168,7 @@
         url: `lis/${mapCol}/${dataCol}/${metricCol}`,
         success: (e) => {
           if (map.map.hasLayer(map.gLayers['choropleth'])) { map.removeLayer('choropleth') }
-          // if (map.map.hasLayer(map.gLayers['mymap'])) { map.removeLayer('mymap') }
+          if (map.map.hasLayer(map.gLayers['mymap'])) { map.removeLayer('mymap') }
           map.addLayer('lis',
             {
               type: 'geojson',
@@ -184,8 +184,8 @@
               },
               link: {
                 url: "uploads/lis.json",
-                dataKey: dataCol,
-                mapKey: dataCol
+                dataKey: mapCol,
+                mapKey: mapCol
               },
               tooltip: (d) => {return `${d.AC_NAME} score: ${d.lis_score}`}
             }

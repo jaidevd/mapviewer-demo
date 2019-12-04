@@ -56,13 +56,13 @@ def process_upload(meta, handler):
         cache['df'] = pd.read_csv(fpath)
         df = cache['df']
         with open('metacols.json', 'w') as fout:
-            json.dump(df.columns.tolist(), fout, indent=4)
+            json.dump([''] + df.columns.tolist(), fout, indent=4)
         df.to_json('metadata.json', orient='records')
     elif meta.mime in ('application/geo+json', 'application/json'):
         outpath = op.join(DIR, 'map.geojson')
         cache['gdf'] = read_file(fpath)
         gdf = cache['gdf']
-        gcols = gdf.columns.tolist()
+        gcols = [''] + gdf.columns.tolist()
         gcols.remove('geometry')
         with open('gcols.json', 'w') as fout:
             json.dump(gcols, fout, indent=4)
