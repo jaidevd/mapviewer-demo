@@ -24,42 +24,46 @@
   <!-- TODO: Filter bars -->
   <div class="container-fluid py-4">
     <div id="base-map"></div>
-    <div class="justify-content-center">
+    <div class="container-fluid py-4">
+      <div class="col">
+        <form>
+          <div class="form-group row">
+            <div class="col">
+              <label for="map-columns-dd">Key column in Map</label>
+            </div>
+            <div class="col">
+              <div id="map-columns-dd"></div>
+            </div>
+          </div>
 
-      <form>
+          <div class="form-group row">
+            <div class="col">
+              <label for="data-columns-dd">Key column in Dataset</label>
+            </div>
+            <div class="col">
+              <div id="data-columns-dd"></div>
+            </div>
+          </div>
 
-      <div class="form-group row">
-        <div class="col">
-          <label for="gcol-dd">Column in Map</label>
-        </div>
-        <div class="col">
-          <div id="gcol-dd"></div>
-        </div>
+          <div class="form-group row">
+            <div class="col">
+              <label for="lis-win-dd">Metric Column</label>
+            </div>
+            <div class="col">
+              <div id="lis-win-dd"></div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <div class="col">
+              <button class="btn btn-primary" id="lis">Plot LIS</button>
+            </div>
+            <div class="col">
+              <button class="btn btn-primary" id="choropleth">Plot Choropleth</button>
+            </div>
+          </div>
+        </form>
       </div>
-
-      <div class="form-group row">
-        <div class="col">
-          <label for="mcol-dd">Column in Dataset</label>
-        </div>
-        <div class="col">
-          <div id="mcol-dd"></div>
-        </div>
-      </div>
-
-      <div class="form-group row">
-        <div class="col">
-          <label for="ccol-dd">Winner Column</label>
-        </div>
-        <div class="col">
-          <div id="ccol-dd"></div>
-        </div>
-      </div>
-
-      <div class="form-group row">
-        <button class="btn btn-primary" id="lis">Plot LIS</button>
-      </div>
-
-      </form>
     </div>
   </div><!-- .container-fluid -->
 
@@ -91,35 +95,80 @@
     map.addLayer('mymap', {type: 'geojson', url: 'uploads/map.geojson'})
     {% end %}
     {% if op.isfile('gcols.json') %}
-    $('#gcol-dd').on('change', (e) => {e.preventDefault()}).dropdown({
+    $('#map-columns-dd').on('change', (e) => {e.preventDefault()}).dropdown({
       url: 'gcols.json',
       target: 'pushState',
-      key: 'gcol'
+      key: 'mapCol'
     })
     {% end %}
     {% if op.isfile('metacols.json') %}
-    $('#mcol-dd').on('change', (e) => {e.preventDefault()}).dropdown({
+    $('#data-columns-dd').on('change', (e) => {e.preventDefault()}).dropdown({
       url: 'metacols.json',
       target: 'pushState',
-      key: 'mcol'
+      key: 'dataCol'
     })
-    $('#ccol-dd').on('change', (e) => {e.preventDefault()}).dropdown({
+    $('#lis-win-dd').on('change', (e) => {e.preventDefault()}).dropdown({
       url: 'metacols.json',
       target: 'pushState',
-      key: 'ccol'
+      key: 'metricCol'
     })
     {% end %}
+
+    $('#choropleth').on('click', (e) => {
+      e.preventDefault()
+      // Run request here
+      let url = g1.url.parse(location.href)
+      let mapCol = url.searchKey.mapCol
+      let dataCol = url.searchKey.dataCol
+      let metricCol = url.searchKey.metricCol
+      if (map.map.hasLayer(map.gLayers['lis'])) { map.removeLayer('lis') }
+      if (map.map.hasLayer(map.gLayers['mymap'])) { map.removeLayer('mymap') }
+      $.get(
+        {
+          url: `choropleth/${metricCol}`,
+          success: (e) => {
+            map.addLayer('choropleth',
+              {
+                type: 'geojson',
+                url: "uploads/map.geojson",
+                attrs: {
+                  color: '#fff',
+                  fillColor: {
+                    metric: `${metricCol}_norm`,
+                    scheme: "RdYlGn"
+                  },
+                  fillOpacity: 1,
+                  weight: 0.5
+                },
+                link: {
+                  url: "metadata.json",
+                  dataKey: dataCol,
+                  mapKey: mapCol
+                },
+                tooltip: (d) => {
+                  let metric = d[metricCol]
+                  let ix = d[dataCol]
+                  return `${ix}: ${metric}`
+
+                }
+              }
+            )
+          }
+        }
+      )
+    })
     $('#lis').on('click', (e) => {
       e.preventDefault()
       // Run request here
       let url = g1.url.parse(location.href)
-      let gcol = url.searchKey.gcol
-      let mcol = url.searchKey.mcol
-      let ccol = url.searchKey.ccol
+      let mapCol = url.searchKey.mapCol
+      let dataCol = url.searchKey.dataCol
+      let metricCol = url.searchKey.metricCol
       $.get({
-        url: `lis/${gcol}/${mcol}/${ccol}`,
+        url: `lis/${mapCol}/${dataCol}/${metricCol}`,
         success: (e) => {
-          map.removeLayer('mymap')
+          if (map.map.hasLayer(map.gLayers['choropleth'])) { map.removeLayer('choropleth') }
+          if (map.map.hasLayer(map.gLayers['mymap'])) { map.removeLayer('mymap') }
           map.addLayer('lis',
             {
               type: 'geojson',
@@ -135,8 +184,8 @@
               },
               link: {
                 url: "uploads/lis.json",
-                dataKey: gcol,
-                mapKey: gcol
+                dataKey: mapCol,
+                mapKey: mapCol
               },
               tooltip: (d) => {return `${d.AC_NAME} score: ${d.lis_score}`}
             }
