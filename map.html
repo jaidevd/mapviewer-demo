@@ -95,7 +95,7 @@
     {% if op.isfile(op.join(DIR, 'map.geojson')) %}
     map.addLayer('mymap', {type: 'geojson', url: 'uploads/map.geojson'})
     {% end %}
-    {% if op.isfile('uploads/gcols.json') %}
+    {% if op.isfile(op.join(DIR, 'gcols.json')) %}
     $('#map-columns-dd').on('change', (e) => {e.preventDefault()}).dropdown({
       url: 'uploads/gcols.json',
       target: 'pushState',
