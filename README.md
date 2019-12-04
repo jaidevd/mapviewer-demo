@@ -66,7 +66,7 @@ In the case of the Italian map, the dataset column is "Terrorito", and the map c
 Finally, select the metric ("Value" for the example dataset) with the "Metric Column" dropdown,
 and click on "Plot Choropleth". You should see a choropleth as follows:
 
-![](assets/choropleth.png)
+![](assets/italy.png)
 
 ### Plotting LIS of electoral regions
 
