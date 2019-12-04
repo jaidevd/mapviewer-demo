@@ -33,6 +33,11 @@ url:
       template: true
       headers:
         Cache-Control: no-store
+  choropleth:
+    pattern: /$YAMLURL/choropleth/(.*)
+    handler: FunctionHandler
+    kwargs:
+      function: lis_mapviewer.choropleth
   lis:
     pattern: /$YAMLURL/lis/(.*)/(.*)/(.*)
     handler: FunctionHandler

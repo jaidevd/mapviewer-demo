@@ -1,6 +1,7 @@
 import pandas as pd
 import os.path as op
 import json
+import numpy as np
 from geopandas import read_file
 import shutil
 
@@ -16,6 +17,16 @@ def find_neighbors(gdf):
     return neighbors
 
 
+def choropleth(handler):
+    df = pd.read_json('metadata.json')
+    col = handler.path_args[0]
+    X = df[col]
+    X = (X - X.min()) / (X.max() - X.min())
+    X = np.digitize(X.values, np.linspace(0, 1, 20))
+    df[col + '_norm'] = X
+    df.to_json('metadata.json', orient='records')
+
+
 def get_lis(handler):
     gcol, mcol, ccol = handler.path_args
     gdf = cache.get('gdf')
@@ -29,9 +40,10 @@ def get_lis(handler):
     neighbors = find_neighbors(gdf)
     gdf['lis_score'] = 0
     for ix, rowdata in df.iterrows():
-        winner = rowdata[ccol]
-        xdf = df.loc[neighbors[ix], ccol]
-        gdf.loc[ix, 'lis_score'] = (xdf == winner).sum() / xdf.shape[0]
+        if ix in neighbors:
+            winner = rowdata[ccol]
+            xdf = df.loc[neighbors[ix], ccol]
+            gdf.loc[ix, 'lis_score'] = (xdf == winner).sum() / xdf.shape[0]
     out = gdf[['lis_score', 'AC_NAME']].reset_index()
     out.to_json(op.join(DIR, 'lis.json'), orient='records')
     return "OK"
@@ -45,7 +57,8 @@ def process_upload(meta, handler):
         df = cache['df']
         with open('metacols.json', 'w') as fout:
             json.dump(df.columns.tolist(), fout, indent=4)
-    elif meta.mime == 'application/geo+json':
+        df.to_json('metadata.json', orient='records')
+    elif meta.mime in ('application/geo+json', 'application/json'):
         outpath = op.join(DIR, 'map.geojson')
         cache['gdf'] = read_file(fpath)
         gdf = cache['gdf']
