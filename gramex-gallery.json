@@ -1,0 +1,6 @@
+{
+  "img_path": "assets/gallery.png",
+  "heading": "g1 MapViewer",
+  "description": "Visualize GeoJSON Data and make Choropleths",
+  "alt": "GIS Choropleth GeoJSON"
+}
